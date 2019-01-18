@@ -18,6 +18,5 @@ class Payload(object):
 
 if __name__ == "__main__":
 
-    a = pickle.dumps(Payload())
-    open(input("Enter File location and name to save :"), "wb").write(a)
+    a = pickle.dump(Payload(), open(input("Enter File location and name to save :"), "wb"))
     print("done...")
