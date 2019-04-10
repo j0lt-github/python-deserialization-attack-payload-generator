@@ -1,5 +1,5 @@
 # Python Deserialization attack payload file generator for pickle ,pyYAML and jsonpickle module by j0lt
-# Requirements : Python 3
+# Requirements : Python 3 , module jsonpickle
 # Usage : python peas.py
 
 import pickle
