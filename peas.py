@@ -22,7 +22,7 @@ class Payload(object):
         open(self.location.__add__("_pick"), "wb").write(by)
 
     def ya(self):
-        by = yaml.dump(Payload(self.cmd, self.location, self.base))
+        by = bytes(yaml.dump(Payload(self.cmd, self.location, self.base)), 'utf-8')
         by = self.verifyencoding(by)
         open(self.location.__add__("_yaml"), "wb").write(by)
 
