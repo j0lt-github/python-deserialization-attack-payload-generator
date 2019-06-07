@@ -22,12 +22,12 @@ class Payload(object):
         open(self.location.__add__("_pick"), "wb").write(by)
 
     def ya(self):
-        by = bytes(yaml.dump(Payload(self.cmd, self.location, self.base)), 'utf-8')
+        by = bytes(yaml.dump(Payload(tuple(self.cmd.split(" ")), self.location, self.base)), 'utf-8')
         by = self.verifyencoding(by)
         open(self.location.__add__("_yaml"), "wb").write(by)
 
     def js(self):
-        by = bytes(jsonpickle.encode(Payload(self.cmd, self.location, self.base)), 'utf-8')
+        by = bytes(jsonpickle.encode(Payload(tuple(self.cmd.split(" ")), self.location, self.base)), 'utf-8')
         by = self.verifyencoding(by)
         open(self.location.__add__("_jspick"), "wb").write(by)
 
