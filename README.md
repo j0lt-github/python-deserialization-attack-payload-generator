@@ -3,4 +3,4 @@ Peas create serialized payload for deserialization RCE attack on python driven a
 Python 3 is required to run this code.<br>
 Usage : python peas.py
 
-Version : 2.3
+Version : 2.2
