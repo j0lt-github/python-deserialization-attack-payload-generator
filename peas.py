@@ -75,6 +75,7 @@ class Payload(object):
                                                                                                 ))))
         return cmd 
 
+    
 if __name__ == "__main__":
     cmd = input("Enter RCE command :")
     o = 'linux' if input("Enter operating system of target [linux/windows] . Default is linux :").lower() != "windows" \
